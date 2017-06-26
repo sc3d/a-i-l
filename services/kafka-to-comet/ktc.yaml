@@ -1,0 +1,189 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: zookeeper
+  namespace: default
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: zookeeper
+        role: broker
+        tier: caching
+      annotations:
+        kontrol.unity3d.com/master: zookeeper.default.svc
+        kontrol.unity3d.com/opentsdb: kairosdb.us-east-1.applifier.info
+    spec:
+      containers:
+       - image: registry2.applifier.info:5005/ads-infra-zookeeper-alpine-3.5:1.0.0
+         name: zookeeper
+         imagePullPolicy: IfNotPresent 
+         ports:
+         - containerPort: 2181
+           protocol: TCP
+         - containerPort: 2888
+           protocol: TCP
+         - containerPort: 3888
+           protocol: TCP
+         - containerPort: 8000
+           protocol: TCP
+         env:
+          - name: NAMESPACE
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.namespace
+
+---
+
+apiVersion: apps/v1beta1
+kind: StatefulSet
+metadata:
+  name: kafka
+  namespace: default
+spec:
+  serviceName: kafka
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: kafka
+        role: broker
+        tier: data
+      annotations:
+        kontrol.unity3d.com/master: kafka.default.svc
+        kontrol.unity3d.com/opentsdb: kairosdb.us-east-1.applifier.info
+        kafka.unity3d.com/overrides: |
+          default.replication.factor=3
+          num.partitions=32
+          retention.ms=259200000
+    spec:
+      containers:
+       - image: registry2.applifier.info:5005/ads-infra-kafka-alpine-3.5:1.0.0
+         name: kafka
+         imagePullPolicy: IfNotPresent 
+         volumeMounts:
+         - name: data
+           mountPath: "/data"
+         ports:
+         - containerPort: 8000
+           protocol: TCP
+         - containerPort: 9092
+           protocol: TCP
+         env:
+          - name: NAMESPACE
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.namespace
+ 
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 1Gi
+
+---
+
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: ktc
+  namespace: default
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: ktc
+    spec:
+      containers:
+       - image: registry2.applifier.info:5005/kafka-pixy:0.9.0
+         name: ktc
+         imagePullPolicy: IfNotPresent 
+         command: ["/bin/bash"]
+         args: ["-c",  "cd /go/kafka-pixy-v0.13.0-linux-amd64 && ./kafka-pixy --kafkaPeers \"kafka.default.svc:9092\" --zookeeperPeers \"zookeeper.default.svc:2181\""]
+         ports:
+         - containerPort: 19091
+           protocol: TCP
+       - image: registry2.applifier.info:5005/kafka-pixy:0.9.0
+         name: comet
+         imagePullPolicy: IfNotPresent 
+         command: ["go"]
+         args: ["run", "src/github.com/UnityTech/kafka-to-comet/kafka-proxy-bundle/mock_comet_server.go"]
+         ports:
+         - containerPort: 8090
+           protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: zookeeper
+  namespace: default
+spec:
+  clusterIP: None 
+  ports:
+  - protocol: TCP
+    port: 2181
+    name: zookeeper
+  - protocol: TCP
+    port: 8000
+    name: kontrol
+  selector:
+    app: zookeeper
+    role: broker
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: kafka
+  namespace: default
+spec:
+  clusterIP: None
+  ports:
+  - protocol: TCP
+    port: 8000
+    name: kontrol
+  - protocol: TCP
+    port: 9092
+    name: kakfa
+  selector:
+    app: kafka
+    role: broker
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: pixy
+  namespace: default
+spec:
+  clusterIP: None
+  ports:
+  - protocol: TCP
+    port: 19091
+    name: pixy
+  selector:
+    app: ktc
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: comet
+  namespace: default
+spec:
+  clusterIP: None
+  ports:
+  - protocol: TCP
+    port: 8090
+    name: comet
+  selector:
+    app: ktc
