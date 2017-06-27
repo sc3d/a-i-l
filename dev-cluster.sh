@@ -3,6 +3,8 @@
 
 # 1st argument - services
 # 2nd argument - action
+ACTION=$1
+SERVICE=$2
 
 # Actions : 
 
@@ -19,13 +21,13 @@ fi
 
 MKUBE_IP=$(minikube ip)
 
-ACTION=$1
-
+# Migrate this guy to setup/teardown
 if [ -z "$ACTION" ] ; then
   echo "Please specify an action"
-  echo "Usage: ./dev-cluster.sh [setup|teardown]"
+  echo "Usage: ./dev-cluster.sh [setup|sync <service_name>|teardown]"
   exit 13
 fi
+# On a similar note, only sync will require a service name :-)
 
 function get_endpoint() {
   SERVICE=$1
@@ -53,6 +55,26 @@ function setup {
   export ZOOKEEPER=$(get_endpoint "zookeeper")
 }
 
+function apply {
+  SERVICE=$1
+  if [ -z "$SERVICE" ] ; then
+    echo "Please specify a service. I don't want to apply them all :-/"
+    echo "Usage: ./dev-cluster.sh [setup|sync <service_name>|teardown]"
+    exit 13
+  fi
+  kubectl create -f services/$SERVICE/*.yaml
+}
+
+function sync {
+  SERVICE=$2
+  if [ -z "$SERVICE" ] ; then
+    echo "Please specify a service. I don't want to sync them all :-/"
+    echo "Usage: ./dev-cluster.sh [setup|sync <service_name>|teardown]"
+    exit 13
+  fi
+  # Now we auto-discovery what are the services ports
+}
+
 function teardown {
   # Undo everything from the setup. Right now, not a lot :-)
   sudo route delete -net 10.0.0.0/24 $GW $MKUBE_IP
@@ -66,6 +88,9 @@ function teardown {
 
 if [ $ACTION == "setup" ] ; then
   setup
+fi
+if [ $ACTION == "apply" ] ; then
+  apply $SERVICE
 fi
 if [ $ACTION == "teardown" ] ; then
   teardown
