@@ -1,0 +1,179 @@
+{
+    "apiVersion": "v1",
+    "items": [
+        {
+            "apiVersion": "v1",
+            "kind": "Service",
+            "metadata": {
+                "creationTimestamp": "2017-06-26T23:14:32Z",
+                "name": "comet",
+                "namespace": "default",
+                "resourceVersion": "40603",
+                "selfLink": "/api/v1/namespaces/default/services/comet",
+                "uid": "361d9aa7-5ac5-11e7-8700-080027f753c9"
+            },
+            "spec": {
+                "clusterIP": "None",
+                "ports": [
+                    {
+                        "name": "comet",
+                        "port": 8090,
+                        "protocol": "TCP",
+                        "targetPort": 8090
+                    }
+                ],
+                "selector": {
+                    "app": "ktc"
+                },
+                "sessionAffinity": "None",
+                "type": "ClusterIP"
+            },
+            "status": {
+                "loadBalancer": {}
+            }
+        },
+        {
+            "apiVersion": "v1",
+            "kind": "Service",
+            "metadata": {
+                "creationTimestamp": "2017-06-26T23:14:31Z",
+                "name": "kafka",
+                "namespace": "default",
+                "resourceVersion": "40595",
+                "selfLink": "/api/v1/namespaces/default/services/kafka",
+                "uid": "357a60d9-5ac5-11e7-8700-080027f753c9"
+            },
+            "spec": {
+                "clusterIP": "None",
+                "ports": [
+                    {
+                        "name": "kontrol",
+                        "port": 8000,
+                        "protocol": "TCP",
+                        "targetPort": 8000
+                    },
+                    {
+                        "name": "kakfa",
+                        "port": 9092,
+                        "protocol": "TCP",
+                        "targetPort": 9092
+                    }
+                ],
+                "selector": {
+                    "app": "kafka",
+                    "role": "broker"
+                },
+                "sessionAffinity": "None",
+                "type": "ClusterIP"
+            },
+            "status": {
+                "loadBalancer": {}
+            }
+        },
+        {
+            "apiVersion": "v1",
+            "kind": "Service",
+            "metadata": {
+                "creationTimestamp": "2017-06-04T18:52:29Z",
+                "labels": {
+                    "component": "apiserver",
+                    "provider": "kubernetes"
+                },
+                "name": "kubernetes",
+                "namespace": "default",
+                "resourceVersion": "10",
+                "selfLink": "/api/v1/namespaces/default/services/kubernetes",
+                "uid": "f554376c-4956-11e7-8700-080027f753c9"
+            },
+            "spec": {
+                "clusterIP": "10.0.0.1",
+                "ports": [
+                    {
+                        "name": "https",
+                        "port": 443,
+                        "protocol": "TCP",
+                        "targetPort": 8443
+                    }
+                ],
+                "sessionAffinity": "ClientIP",
+                "type": "ClusterIP"
+            },
+            "status": {
+                "loadBalancer": {}
+            }
+        },
+        {
+            "apiVersion": "v1",
+            "kind": "Service",
+            "metadata": {
+                "creationTimestamp": "2017-06-26T23:14:31Z",
+                "name": "pixy",
+                "namespace": "default",
+                "resourceVersion": "40598",
+                "selfLink": "/api/v1/namespaces/default/services/pixy",
+                "uid": "35a9343e-5ac5-11e7-8700-080027f753c9"
+            },
+            "spec": {
+                "clusterIP": "None",
+                "ports": [
+                    {
+                        "name": "pixy",
+                        "port": 19091,
+                        "protocol": "TCP",
+                        "targetPort": 19091
+                    }
+                ],
+                "selector": {
+                    "app": "ktc"
+                },
+                "sessionAffinity": "None",
+                "type": "ClusterIP"
+            },
+            "status": {
+                "loadBalancer": {}
+            }
+        },
+        {
+            "apiVersion": "v1",
+            "kind": "Service",
+            "metadata": {
+                "creationTimestamp": "2017-06-26T23:14:30Z",
+                "name": "zookeeper",
+                "namespace": "default",
+                "resourceVersion": "40591",
+                "selfLink": "/api/v1/namespaces/default/services/zookeeper",
+                "uid": "354f0d5f-5ac5-11e7-8700-080027f753c9"
+            },
+            "spec": {
+                "clusterIP": "None",
+                "ports": [
+                    {
+                        "name": "zookeeper",
+                        "port": 2181,
+                        "protocol": "TCP",
+                        "targetPort": 2181
+                    },
+                    {
+                        "name": "kontrol",
+                        "port": 8000,
+                        "protocol": "TCP",
+                        "targetPort": 8000
+                    }
+                ],
+                "selector": {
+                    "app": "zookeeper",
+                    "role": "broker"
+                },
+                "sessionAffinity": "None",
+                "type": "ClusterIP"
+            },
+            "status": {
+                "loadBalancer": {}
+            }
+        }
+    ],
+    "kind": "List",
+    "metadata": {},
+    "resourceVersion": "",
+    "selfLink": ""
+}
